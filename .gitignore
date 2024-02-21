@@ -1,0 +1,5 @@
+.vscode
+.out
+pycache
+env
+.h.gch

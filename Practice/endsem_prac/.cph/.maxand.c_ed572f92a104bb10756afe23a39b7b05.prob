@@ -1,0 +1,1 @@
+{"name":"Local: maxand","url":"/home/hl/Code_wsl/Practice/endsem_prac/maxand.c","tests":[{"id":1700757370023,"input":"7 0\n4 6 6 28 6 6 12","output":"4"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"/home/hl/Code_wsl/Practice/endsem_prac/maxand.c","group":"local","local":true}
