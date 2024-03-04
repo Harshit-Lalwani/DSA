@@ -1,127 +1,133 @@
-//you are given an array of n integers. you have to find the length of the largest subarray such that all the elements in the subarray are consecutive integers.
-//print the length of the subarray and the indices of the subarray
-
-
-// Constraints:
-// 1 <= n <= 2 ⋅ 10^5
-
-// 1 <= arr[i] <= 10^9
-
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_N 300000
 
-typedef struct {
-    int key;
-    int value;
-} hash_item;
-
-typedef struct {
-    hash_item* items[MAX_N];
-} hash_table;
-
-hash_table* create_hash_table() {
-    hash_table* ht = malloc(sizeof(hash_table));
-    for(int i = 0; i < MAX_N; i++) {
-        ht->items[i] = NULL;
+int max(int a, int b)
+{
+    if(a>b)
+    {
+        return a;
     }
-    return ht;
-}
-
-void insert(hash_table* ht, int key, int value) {
-    hash_item* item = malloc(sizeof(hash_item));
-    item->key = key;
-    item->value = value;
-    int hash_index = key % MAX_N;
-    ht->items[hash_index] = item;
-}
-
-int search(hash_table* ht, int key) {
-    int hash_index = key % MAX_N;
-    if(ht->items[hash_index] != NULL) {
-        return ht->items[hash_index]->value;
-    } else {
-        return -1;
+    else
+    {
+        return b;
     }
 }
 
-int max(int a, int b) {
-    return a > b ? a : b;
-}
-
-int main() {
-    hash_table* ls = create_hash_table();
-    hash_table* count = create_hash_table();
+int main()
+{
+    int ls[MAX_N] = {0};
+    int count[MAX_N] = {0};
 
     int n;
-    int largest_num;
-    scanf("%d", &n);
+    int largest_num=0; //largest number in ans subarray
+    scanf("%d",&n);
 
     int arr[n];
-    for(int i = 0; i < n; i++) {
-        scanf("%d", &arr[i]);
+    for(int i=0;i<n;i++)
+    {
+        scanf("%d",&arr[i]);
+    }
+    if(n==0)
+    {
+        return 0;
+    }
+
+    if(n==1)
+    {
+        printf("1\n0\n");
+        return 0;
     }
 
     int max_count = 0;
+    // int smallest_in_longest = 0;
 
-    for(int i = 0; i < n; i++) {
-        if(i == 0) {
-            insert(ls, arr[i], arr[i]);
-            insert(count, arr[i], 1);
-            if(max_count < 1) {
-                max_count = 1;                
-                largest_num = arr[i];
-            }
-        } else if(search(ls, arr[i] - 1) != -1) {
-            insert(ls, arr[i], search(ls, arr[i] - 1));
-            insert(count, search(ls, arr[i]), search(count, search(ls, arr[i])) + 1);
-            if(search(count, search(ls, arr[i])) > max_count) {
-                max_count = search(count, search(ls, arr[i]));
-                largest_num = arr[i];
-            }
-        } else {
-            insert(ls, arr[i], arr[i]);
-            insert(count, arr[i], 1);
-            max_count = max(max_count, 1);
-            if(max_count < 1) {
+    for(int i=0;i<n;i++)
+    {
+        if(i==0)
+        {
+            ls[arr[i]] = arr[i];
+            count[arr[i]] = 1;
+            if(max_count<1)
+            {
                 max_count = 1;
+                // smallest_in_longest = arr[i];
                 largest_num = arr[i];
+            }
+
+            continue;
+        }
+
+        if(ls[arr[i]] != 0)
+        {
+            if(ls[arr[i]-1] != 0)
+            {
+                ls[arr[i]] = ls[arr[i]-1]; 
             }
         }
-        printf("i= %d, max_count = %d, largest_num = %d, arr[i] = %d\n", i, max_count, largest_num, arr[i]);
-    }
+        else
+        {
+            if (ls[arr[i]-1] != 0)
+            {
+                ls[arr[i]] = ls[arr[i]-1];
+                count[ls[arr[i]]] ++;
+                if(count[ls[arr[i]]]>max_count)
+                {
+                    max_count = count[ls[arr[i]]];
+                    // smallest_in_longest = ls[arr[i]];
+                    largest_num = arr[i];
+                }
+            }
+            else
+            {
+                ls[arr[i]] = arr[i];
+                count[arr[i]] = 1;
+                max_count = max(max_count,1);
+                if(max_count<1)
+                {
+                    max_count = 1;
+                    // smallest_in_longest = arr[i];
+                    largest_num = arr[i];
+                }
+            }
+        }
+    }  
 
-    printf("%d\n", max_count);
+    int out[n];
+    int prev_index  = n;
+    int count_out = 0;
+    int found = 0;
 
-
-    int out[max_count];
-    int prev_index = n;
-
-    printf("largest_num = %d\n", largest_num);
-
-    for(int i = max_count - 1; i >= 0; i--) {
+    while(ls[largest_num] != 0 && prev_index>=1) {
+        found =0;
         for(int j = prev_index - 1; j >= 0; j--) {
             if(arr[j] == largest_num) {
-                printf("prev_index = %d\n", prev_index);
-                printf("arr[%d] = %d\n",j, arr[j]);
-                out[i] = j;
+                found =1;
+                out[count_out++] = j;
                 prev_index = j;
                 break;
             }
         }
+
+        if(found ==0)
+        {
+            break;
+        }
         largest_num--;
     }
 
-    for(int i = 0; i < max_count; i++) {
+    printf("%d\n", count_out);
+
+    for(int i = count_out-1; i>=0; i--) {
         printf("%d ", out[i]);
     }
 
     printf("\n");
 
-    free(ls);
-    free(count);
+    // free(arr);
+    // free(out);
 
     return 0;
 }
