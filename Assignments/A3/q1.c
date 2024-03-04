@@ -1,28 +1,53 @@
+//aim: find largest contiguous subarray with consecutive elements(multiple possible answers, each is valid). Print its sie and indices of its elements
+//LOGIC: arrays ls and count of size n
+//ls[i] stores the smallest element in the subarray ending at arr[i]
+//count[i] stores the number of elements in the subarray ending at arr[i]
+//if arr[i] is the first element of a subarray, then ls[i] = arr[i] and count[i] = 1
+//if arr[i] is not the first element of a subarray, then ls[i] = ls[j] (s.t arr[i]-1 = arr[j]) and count[i]++
+
+// constaraints: a<=n<=200000, 1<=arr[i]<=1000000000
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define MAX_N 300000
 
-int max(int a, int b)
+//func to find first index of number in array between l and r(inclusive)
+int find_first(int arr[], int l, int r, int num)
 {
-    if(a>b)
+    //printf("\nSearching for first occurrence of %d between indices %d and %d\n", num, l, r);
+    for(int i=l;i<=r;i++)
     {
-        return a;
+        //printf("\ti = %d, arr[i] = %d, num = %d\n",i,arr[i],num);
+        if(arr[i]==num)
+        {
+            //printf("\tFound at index %d\n", i);
+            return i;
+        }
     }
-    else
+    //printf("\tNot found\n");
+    return -1;
+}
+
+int find_last(int arr[], int l, int r, int num)
+{
+    //printf("\nSearching for last occurrence of %d between indices %d and %d\n", num, l, r);
+    for(int i=r;i>=l;i--)
     {
-        return b;
+        //printf("\ti = %d, arr[i] = %d, num = %d\n",i,arr[i],num);
+        if(arr[i]==num)
+        {
+            //printf("\tFound at index %d\n", i);
+            return i;
+        }
     }
+    //printf("\tNot found\n");
+    return -1;
 }
 
 int main()
 {
-    int ls[MAX_N] = {0};
-    int count[MAX_N] = {0};
-
     int n;
-    int largest_num=0; //largest number in ans subarray
     scanf("%d",&n);
 
     int arr[n];
@@ -34,100 +59,108 @@ int main()
     {
         return 0;
     }
-
     if(n==1)
     {
-        printf("1\n0\n");
+        //printf("1\n0\n");
         return 0;
     }
 
-    int max_count = 0;
-    // int smallest_in_longest = 0;
+    //keeping size MAX_N so that array can be initialized with -1
+    int ls[MAX_N] = {-1};
+    int count[MAX_N] = {-1};
 
-    for(int i=0;i<n;i++)
+    ls[0] = 0;
+    count[0] = 1;
+    int max_count =1;
+
+    int j,k, l=0, r=0;
+    for(int i=1;i<n;i++)
     {
-        if(i==0)
-        {
-            ls[arr[i]] = arr[i];
-            count[arr[i]] = 1;
-            if(max_count<1)
-            {
-                max_count = 1;
-                // smallest_in_longest = arr[i];
-                largest_num = arr[i];
-            }
+        //printf("i = %d, val = %d\n",i,arr[i]);
+        //Search for last occurence of arr[i] in window [l,r], say =k
+        
+        //HANDLE OCCURENCE OF DUPLICATES ALL KINDS OF CASES
 
-            continue;
-        }
+        j = find_last(arr,0,i-1,arr[i]-1);
+        l = j+1;
+        k = find_first(arr,l,r,arr[i]);        
 
-        if(ls[arr[i]] != 0)
+        if(k==-1)
         {
-            if(ls[arr[i]-1] != 0)
+            if(j==-1)
             {
-                ls[arr[i]] = ls[arr[i]-1]; 
-            }
-        }
-        else
-        {
-            if (ls[arr[i]-1] != 0)
-            {
-                ls[arr[i]] = ls[arr[i]-1];
-                count[ls[arr[i]]] ++;
-                if(count[ls[arr[i]]]>max_count)
-                {
-                    max_count = count[ls[arr[i]]];
-                    // smallest_in_longest = ls[arr[i]];
-                    largest_num = arr[i];
-                }
+                ls[i] = i;
+                count[i] = 1;
+                l = i;
             }
             else
             {
-                ls[arr[i]] = arr[i];
-                count[arr[i]] = 1;
-                max_count = max(max_count,1);
-                if(max_count<1)
+                l = j+1;
+                ls[i] = ls[j];
+                count[i] = count[j]+1;
+                if(count[i]>max_count)
                 {
-                    max_count = 1;
-                    // smallest_in_longest = arr[i];
-                    largest_num = arr[i];
+                    max_count = count[i];
                 }
             }
         }
-    }  
 
-    int out[n];
-    int prev_index  = n;
-    int count_out = 0;
-    int found = 0;
+        // I make sure ls of last occurence is non-trivial, for all others, make it -1
+        // to do this, I pass on ls value to current occurence and make it -1 for last(before current) occurence
 
-    while(ls[largest_num] != 0 && prev_index>=1) {
-        found =0;
-        for(int j = prev_index - 1; j >= 0; j--) {
-            if(arr[j] == largest_num) {
-                found =1;
-                out[count_out++] = j;
-                prev_index = j;
-                break;
-            }
-        }
-
-        if(found ==0)
+        else
         {
-            break;
+            // if(ls[k]==k) //if k is the first occurence of arr[k]
+            // {
+            //     ls[i] = i;
+            //     count[i] = 1;
+            // }
+
+            // else
+            // {
+            //     ls[i] = ls[k];
+            //     count[i] = count[k];
+            // }
+            
+            ls[i] = -1;
+            count[i] = -1;
+            l = k;
+            //all occurence except this have been made -1              
+            
         }
-        largest_num--;
+        r = i;
+
+        for(int r=0;r<=i;r++)
+        {
+            //printf("i = %d, val = %d, ls = %d, count = %d\n",r,arr[r],ls[r],count[r]);
+        }
+        //printf("l = %d, r = %d\n",l,r);
+        //TO UPDATE l AND r
     }
 
-    printf("%d\n", count_out);
+    printf("%d\n",max_count);
 
-    for(int i = count_out-1; i>=0; i--) {
-        printf("%d ", out[i]);
+    //print index and values stored in arr, ls, count
+    for(int i=0;i<n;i++)
+    {
+        //printf("i = %d, val = %d, ls = %d, count = %d\n",i,arr[i],ls[i],count[i]);
     }
 
-    printf("\n");
+    int last_index = find_first(count,0,n-1,max_count);
+    int first_ans =  ls[last_index];
+    int prev_index =n;
+    //printf("first_ans = %d, last index = %d\n",first_ans,last_index);
 
-    // free(arr);
-    // free(out);
-
-    return 0;
+    //print all elements where ls[i] = prev_index
+    for(int i=0;i<n;i++)
+    {
+        if(ls[i]==first_ans && arr[i]!=arr[prev_index])
+        {
+            //printf("arr[%d] =%d\n",i,arr[i]);
+            printf("%d ",i);
+            prev_index = i;
+        }
+        
+    }  
+    
 }
